@@ -1,0 +1,449 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+{% if not profile %}
+<section class="min-h-[60vh] flex items-center justify-center px-6">
+  <div class="glass rounded-3xl p-10 max-w-lg text-center">
+    <h1 class="text-2xl font-semibold">No profile yet</h1>
+    <p class="text-muted mt-3">Run <code class="text-accent">python manage.py seed_portfolio</code> or add your profile in the admin.</p>
+  </div>
+</section>
+{% else %}
+
+{% if messages %}
+<div class="fixed top-20 inset-x-0 z-40 flex justify-center px-6" aria-live="polite">
+  {% for message in messages %}
+  <div class="toast glass-strong rounded-2xl px-5 py-3 text-sm text-ink max-w-xl shadow-2xl">{{ message }}</div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{{ typing_words|json_script:"typing-words" }}
+
+{# ================= Hero ================= #}
+<section class="relative min-h-screen flex flex-col justify-center overflow-hidden pt-28 pb-16">
+  <div class="absolute inset-0 -z-10 pointer-events-none">
+    <div class="absolute inset-0 grid-bg opacity-60"></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-transparent via-bg/40 to-bg"></div>
+  </div>
+
+  <div class="mx-auto max-w-6xl px-6 grid lg:grid-cols-12 gap-14 items-center w-full">
+    <div class="lg:col-span-7 space-y-7">
+      <div class="rise flex flex-wrap items-center gap-3" style="--d: .05s">
+        {% if profile.available_for_work %}
+        <span class="inline-flex items-center gap-2 glass rounded-full px-4 py-2 text-sm text-accent">
+          <span class="w-2 h-2 rounded-full bg-accent pulse-dot"></span>
+          Open to Python full stack roles
+        </span>
+        {% endif %}
+        <span class="inline-flex items-center gap-2 glass rounded-full px-4 py-2 text-sm text-muted">
+          {{ profile.location }}
+        </span>
+      </div>
+
+      <h1 class="rise text-5xl md:text-6xl xl:text-7xl font-semibold leading-[1.02] tracking-tight" style="--d: .15s">
+        Hi, I'm
+        <span class="block liquid-text pb-2">{{ profile.name }}</span>
+      </h1>
+
+      <p class="rise font-serif italic text-2xl md:text-3xl text-ink/90" style="--d: .3s">{{ profile.headline }}</p>
+
+      <p class="rise text-lg text-muted flex flex-wrap items-center gap-x-2" style="--d: .35s">
+        <span>Currently building</span>
+        <span id="typed" class="text-accent font-medium" aria-live="off">{{ typing_words.0 }}</span>
+        <span class="typed-cursor" aria-hidden="true"></span>
+      </p>
+
+      <p class="rise text-lg text-muted max-w-xl leading-relaxed" style="--d: .4s">{{ profile.intro }}</p>
+
+      <div class="rise flex flex-wrap items-center gap-4" style="--d: .5s">
+        <a href="#contact" class="btn-primary magnetic rounded-full font-semibold px-6 py-3">Get in touch</a>
+        {% if profile.resume %}
+        <a href="{{ profile.resume.url }}" download class="btn-ghost magnetic glass rounded-full px-6 py-3">Download resume</a>
+        {% endif %}
+      </div>
+
+      <div class="rise flex items-center gap-3 text-sm text-muted" style="--d: .6s">
+        <span>Find me on</span>
+        {% if profile.github_url %}<a href="{{ profile.github_url }}" target="_blank" rel="noopener" class="hover:text-accent transition-colors">GitHub</a>{% endif %}
+        {% if profile.linkedin_url %}<span class="text-white/20">/</span><a href="{{ profile.linkedin_url }}" target="_blank" rel="noopener" class="hover:text-accent transition-colors">LinkedIn</a>{% endif %}
+      </div>
+    </div>
+
+    <div class="lg:col-span-5 relative max-w-md mx-auto w-full rise" style="--d: .25s">
+      <div class="absolute -inset-8 rounded-[2.5rem] bg-gradient-to-br from-accent/30 via-transparent to-violet-500/25 blur-3xl pointer-events-none"></div>
+      <div class="float">
+        <div class="tilt glass-strong relative rounded-[1.75rem] p-2">
+          {% if profile.photo %}
+          <img src="{{ profile.photo.url }}" alt="{{ profile.name }}" class="w-full aspect-[4/5] object-cover rounded-[1.25rem]">
+          {% else %}
+          <img src="{% static 'img/AyanProfile1.png' %}" alt="{{ profile.name }}" class="w-full aspect-[4/5] object-cover rounded-[1.25rem]">
+          {% endif %}
+        </div>
+      </div>
+      {% if profile.available_for_work %}
+      <div class="float absolute -bottom-5 -left-5 glass rounded-2xl px-4 py-3 flex items-center gap-3 shadow-2xl" style="animation-delay: -3s">
+        <span class="w-2.5 h-2.5 rounded-full bg-accent pulse-dot"></span>
+        <span class="text-sm">Currently available</span>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  {# Skills marquee #}
+  {% if skill_groups %}
+  <div class="rise mt-20" style="--d: .7s">
+    <div class="marquee py-5 border-y border-white/5">
+      <div class="marquee-track">
+        {% for group in skill_groups.values %}{% for skill in group %}<span class="px-6 text-2xl font-semibold text-white/25 whitespace-nowrap">{{ skill.name }}<span class="pl-12 text-accent/60">✦</span></span>{% endfor %}{% endfor %}
+        {% for group in skill_groups.values %}{% for skill in group %}<span class="px-6 text-2xl font-semibold text-white/25 whitespace-nowrap" aria-hidden="true">{{ skill.name }}<span class="pl-12 text-accent/60">✦</span></span>{% endfor %}{% endfor %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <a href="#about" class="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-xs uppercase tracking-[0.25em] text-muted hover:text-accent transition-colors">
+    Scroll
+    <span class="block w-px h-8 bg-gradient-to-b from-accent to-transparent float"></span>
+  </a>
+</section>
+
+{# ================= About ================= #}
+<section id="about" class="py-24 md:py-32">
+  <div class="mx-auto max-w-6xl px-6 grid lg:grid-cols-12 gap-8 lg:gap-12">
+    <div class="reveal lg:col-span-5 space-y-6">
+      <span class="eyebrow"><span class="section-index">01</span>About</span>
+      <h2 class="text-4xl md:text-5xl font-semibold leading-tight">
+        Building the web <span class="font-serif italic font-normal text-accent">piece by piece.</span>
+      </h2>
+    </div>
+
+    <div class="lg:col-span-7 grid sm:grid-cols-2 gap-6">
+      <div class="reveal sm:col-span-2 spotlight glass rounded-3xl p-8 space-y-5 text-muted leading-relaxed">
+        {% for paragraph in profile.paragraphs %}
+        <p>{{ paragraph }}</p>
+        {% endfor %}
+      </div>
+
+      {% if profile.mission %}
+      <div class="reveal spotlight glass rounded-3xl p-7 flex flex-col justify-between gap-6" style="--d: .1s">
+        <p class="font-serif italic text-xl leading-snug text-ink">&ldquo;{{ profile.mission }}&rdquo;</p>
+        <span class="text-xs uppercase tracking-[0.2em] text-accent">Mission</span>
+      </div>
+      {% endif %}
+
+      <div class="reveal spotlight glass rounded-3xl p-7 space-y-4" style="--d: .2s">
+        <p class="text-xs uppercase tracking-[0.2em] text-muted">Based in</p>
+        <p class="text-lg text-ink">{{ profile.location }}</p>
+        <p class="text-sm text-muted">Open to remote roles and relocation conversations.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# ================= Skills ================= #}
+{% if skill_groups %}
+<section id="skills" class="py-24 md:py-32">
+  <div class="mx-auto max-w-6xl px-6">
+    <div class="reveal max-w-2xl mb-14 space-y-5">
+      <span class="eyebrow"><span class="section-index">02</span>Skills</span>
+      <h2 class="text-4xl md:text-5xl font-semibold leading-tight">What I work <span class="font-serif italic font-normal text-accent">with.</span></h2>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-6">
+      {% for category, skills in skill_groups.items %}
+      <div class="reveal spotlight glass rounded-3xl p-7">
+        <div class="flex items-center justify-between mb-5">
+          <h3 class="text-sm uppercase tracking-[0.2em] text-muted">{{ category }}</h3>
+          <span class="text-xs text-accent/80">{{ skills|length }}</span>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          {% for skill in skills %}
+          <span class="chip rounded-full border border-white/10 bg-white/[0.03] px-4 py-1.5 text-sm text-ink/90">{{ skill.name }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{# ================= Experience & education ================= #}
+<section id="experience" class="py-24 md:py-32">
+  <div class="mx-auto max-w-6xl px-6 grid lg:grid-cols-12 gap-12">
+    <div class="reveal lg:col-span-4 space-y-5 lg:sticky lg:top-28 lg:self-start">
+      <span class="eyebrow"><span class="section-index">03</span>Experience</span>
+      <h2 class="text-4xl md:text-5xl font-semibold leading-tight">Where I've <span class="font-serif italic font-normal text-accent">worked.</span></h2>
+      <p class="text-muted leading-relaxed max-w-sm">Roles, freelance work and training that shaped how I build for the web.</p>
+    </div>
+
+    <div class="lg:col-span-8 relative pl-8">
+      <div class="absolute left-[0.72rem] top-3 bottom-3 w-px bg-white/10">
+        <div class="draw h-full w-full bg-gradient-to-b from-accent via-accent/60 to-transparent"></div>
+      </div>
+
+      <div class="space-y-6">
+        {% for job in experiences %}
+        <article class="reveal relative spotlight glass rounded-3xl p-7" data-accordion>
+          <span class="absolute -left-[1.6rem] top-8 h-3 w-3 rounded-full bg-accent ring-4 ring-bg"></span>
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div class="space-y-1">
+              <h3 class="text-xl font-semibold">{{ job.role }}</h3>
+              <p class="text-muted">{{ job.organization }}{% if job.location %} · {{ job.location }}{% endif %}</p>
+            </div>
+            {% if job.period %}<span class="text-sm text-accent pt-1">{{ job.period }}</span>{% endif %}
+          </div>
+
+          {% if job.bullets %}
+          <button type="button" class="accordion-toggle mt-4 inline-flex items-center gap-2 text-sm text-muted hover:text-accent transition-colors" aria-expanded="true" aria-controls="exp-{{ forloop.counter }}">
+            <span class="accordion-label">Hide details</span>
+            <svg class="chevron rotate-180 h-4 w-4 transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div id="exp-{{ forloop.counter }}" class="accordion-panel">
+            <ul class="list-disc pl-5 mt-4 space-y-2 text-sm text-muted leading-relaxed">
+              {% for bullet in job.bullets %}<li>{{ bullet }}</li>{% endfor %}
+            </ul>
+          </div>
+          {% endif %}
+        </article>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="mx-auto max-w-6xl px-6 mt-20">
+    <div class="reveal flex items-center gap-4 mb-8">
+      <span class="eyebrow"><span class="section-index">04</span>Education</span>
+    </div>
+    <div class="grid md:grid-cols-2 gap-6">
+      {% for edu in educations %}
+      <article class="reveal spotlight glass rounded-3xl p-7 space-y-2" style="--d: .1s">
+        <h3 class="text-lg font-semibold">{{ edu.degree }}</h3>
+        <p class="text-sm text-muted">{{ edu.institution }}</p>
+        <p class="text-sm text-accent">{{ edu.period }}</p>
+        {% if edu.details %}<p class="text-sm text-muted">{{ edu.details }}</p>{% endif %}
+        {% if edu.coursework %}<p class="text-sm text-muted pt-3 mt-3 border-t border-white/5">{{ edu.coursework }}</p>{% endif %}
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{# ================= Projects ================= #}
+{% if projects %}
+<section id="projects" class="py-24 md:py-32">
+  <div class="mx-auto max-w-6xl px-6">
+    <div class="reveal max-w-2xl mb-10 space-y-5">
+      <span class="eyebrow"><span class="section-index">05</span>Projects</span>
+      <h2 class="text-4xl md:text-5xl font-semibold leading-tight">Selected <span class="font-serif italic font-normal text-accent">work.</span></h2>
+    </div>
+
+    {% if project_filters %}
+    <div class="reveal flex flex-wrap items-center gap-2 mb-10" role="group" aria-label="Filter projects by technology">
+      <button type="button" class="filter-chip is-active" data-filter="all" aria-pressed="true">All</button>
+      {% for tech in project_filters %}
+      <button type="button" class="filter-chip" data-filter="{{ tech|lower }}" aria-pressed="false">{{ tech }}</button>
+      {% endfor %}
+      <span class="ml-auto text-sm text-muted" id="filter-count" aria-live="polite"></span>
+    </div>
+    {% endif %}
+
+    <div class="grid md:grid-cols-2 gap-6" id="project-grid">
+      {% for project in projects %}
+      <article class="project-card reveal group spotlight glass rounded-3xl overflow-hidden flex flex-col" data-tags="{% for t in project.tech_list %}{{ t|lower }}{% if not forloop.last %},{% endif %}{% endfor %}">
+        <div class="aspect-video overflow-hidden bg-surface">
+          {% if project.image %}
+          <img src="{{ project.image.url }}" alt="{{ project.title }}" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105">
+          {% else %}
+          <div class="w-full h-full grid-bg flex items-center justify-center">
+            <span class="font-serif italic text-3xl text-white/20">{{ project.title|truncatechars:24 }}</span>
+          </div>
+          {% endif %}
+        </div>
+        <div class="p-7 flex flex-col gap-4 flex-1">
+          <h3 class="text-xl font-semibold transition-colors group-hover:text-accent">{{ project.title }}</h3>
+          <p class="text-sm text-muted leading-relaxed flex-1">{{ project.summary }}</p>
+          <div class="flex flex-wrap gap-2">
+            {% for tech in project.tech_list %}
+            <span class="rounded-full bg-white/[0.03] px-3 py-1 text-xs text-muted border border-white/5">{{ tech }}</span>
+            {% endfor %}
+          </div>
+          {% if project.live_url or project.github_url %}
+          <div class="flex items-center gap-5 text-sm pt-2">
+            {% if project.live_url %}<a href="{{ project.live_url }}" target="_blank" rel="noopener" class="text-accent hover:underline underline-offset-4">Live demo ↗</a>{% endif %}
+            {% if project.github_url %}<a href="{{ project.github_url }}" target="_blank" rel="noopener" class="text-muted hover:text-ink transition-colors">Source code ↗</a>{% endif %}
+          </div>
+          {% endif %}
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{# ================= Contact ================= #}
+<section id="contact" class="py-24 md:py-32">
+  <div class="mx-auto max-w-6xl px-6 grid lg:grid-cols-12 gap-12">
+    <div class="reveal lg:col-span-5 space-y-6">
+      <span class="eyebrow"><span class="section-index">06</span>Contact</span>
+      <h2 class="text-4xl md:text-5xl font-semibold leading-tight">Let's build <span class="font-serif italic font-normal text-accent">something.</span></h2>
+      <p class="text-muted leading-relaxed max-w-md">Have a role, a project, or a question? Send a message and I'll get back to you.</p>
+
+      <ul class="space-y-3 text-sm">
+        <li class="spotlight glass rounded-2xl px-5 py-4 flex items-center justify-between gap-4">
+          <div>
+            <span class="text-muted">Email</span><br>
+            <a class="text-ink hover:text-accent transition-colors" href="mailto:{{ profile.email }}">{{ profile.email }}</a>
+          </div>
+          <button type="button" class="copy-btn rounded-full border border-white/10 px-3 py-1.5 text-xs text-muted hover:border-accent hover:text-accent transition-colors" data-copy="{{ profile.email }}">Copy</button>
+        </li>
+        {% if profile.phone %}<li class="spotlight glass rounded-2xl px-5 py-4"><span class="text-muted">Phone</span><br><a class="text-ink hover:text-accent transition-colors" href="tel:{{ profile.phone|cut:' ' }}">{{ profile.phone }}</a></li>{% endif %}
+        <li class="spotlight glass rounded-2xl px-5 py-4"><span class="text-muted">Location</span><br><span class="text-ink">{{ profile.location }}</span></li>
+      </ul>
+    </div>
+
+    <div class="reveal lg:col-span-7 spotlight glass rounded-3xl p-8 md:p-10" style="--d: .1s">
+      <form method="post" action="{% url 'contact' %}" class="contact-form space-y-6" novalidate id="contact-form">
+        {% csrf_token %}
+        {% if contact_has_errors %}
+        <div class="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300" role="alert">Please fix the highlighted fields and try again.</div>
+        {% endif %}
+
+        {% for field in contact_form.visible_fields %}
+        <div class="space-y-2">
+          <label for="{{ field.id_for_label }}" class="block text-sm text-muted">{{ field.label }}</label>
+          {{ field }}
+          {% for error in field.errors %}<p class="text-sm text-red-300">{{ error }}</p>{% endfor %}
+        </div>
+        {% endfor %}
+
+        {# Honeypot: hidden from people, filled by bots. #}
+        <div class="hidden" aria-hidden="true">{{ contact_form.website }}</div>
+
+        <button type="submit" class="btn-primary magnetic w-full rounded-full font-semibold py-3.5" id="contact-submit">
+          <span class="submit-label">Send message</span>
+        </button>
+      </form>
+    </div>
+  </div>
+</section>
+
+{% endif %}
+
+<script>
+  // Typing line in the hero: cycles through the phrases.
+  (function () {
+    var target = document.getElementById('typed');
+    var data = document.getElementById('typing-words');
+    if (!target || !data) return;
+    var words = JSON.parse(data.textContent);
+    if (words.length < 2 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var index = 0, pos = words[0].length, deleting = true;
+    setTimeout(function step() {
+      var word = words[index];
+      if (deleting) {
+        pos = Math.max(0, pos - 1);
+      } else {
+        pos = Math.min(word.length, pos + 1);
+      }
+      target.textContent = word.slice(0, pos);
+      var delay = 70;
+      if (!deleting && pos === word.length) { delay = 1800; deleting = true; }
+      else if (deleting && pos === 0) { deleting = false; index = (index + 1) % words.length; delay = 350; }
+      else if (deleting) { delay = 35; }
+      setTimeout(step, delay);
+    }, 1200);
+  })();
+
+  // Project filter chips.
+  (function () {
+    var buttons = document.querySelectorAll('.filter-chip');
+    var cards = document.querySelectorAll('.project-card');
+    var count = document.getElementById('filter-count');
+    if (!buttons.length || !cards.length) return;
+    function apply(filter) {
+      var shown = 0;
+      cards.forEach(function (card) {
+        var tags = (card.getAttribute('data-tags') || '').split(',').map(function (t) { return t.trim(); });
+        var match = filter === 'all' || tags.indexOf(filter) !== -1;
+        card.classList.toggle('is-hidden', !match);
+        if (match) {
+          shown++;
+          card.classList.remove('card-in');
+          void card.offsetWidth;
+          card.classList.add('card-in');
+        }
+      });
+      if (count) count.textContent = shown + (shown === 1 ? ' project' : ' projects');
+    }
+    buttons.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        buttons.forEach(function (b) {
+          var active = b === btn;
+          b.classList.toggle('is-active', active);
+          b.setAttribute('aria-pressed', String(active));
+        });
+        apply(btn.getAttribute('data-filter'));
+      });
+    });
+    apply('all');
+  })();
+
+  // Experience: expand and collapse details.
+  (function () {
+    document.querySelectorAll('[data-accordion]').forEach(function (item) {
+      var toggle = item.querySelector('.accordion-toggle');
+      var panel = item.querySelector('.accordion-panel');
+      if (!toggle || !panel) return;
+      toggle.addEventListener('click', function () {
+        var open = toggle.getAttribute('aria-expanded') !== 'true';
+        toggle.setAttribute('aria-expanded', String(open));
+        toggle.querySelector('.accordion-label').textContent = open ? 'Hide details' : 'Details';
+        panel.classList.toggle('is-collapsed', !open);
+        toggle.querySelector('.chevron').classList.toggle('rotate-180', open);
+      });
+    });
+  })();
+
+  // Copy the email address to the clipboard.
+  (function () {
+    document.querySelectorAll('.copy-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var value = btn.getAttribute('data-copy');
+        var done = function () {
+          var original = btn.textContent;
+          btn.textContent = 'Copied';
+          btn.classList.add('text-accent');
+          setTimeout(function () { btn.textContent = original; btn.classList.remove('text-accent'); }, 1600);
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(value).then(done, function () {});
+        } else {
+          var input = document.createElement('input');
+          input.value = value;
+          document.body.appendChild(input);
+          input.select();
+          try { document.execCommand('copy'); done(); } catch (e) {}
+          input.remove();
+        }
+      });
+    });
+  })();
+
+  // Contact form: show a sending state while the message is submitted.
+  (function () {
+    var form = document.getElementById('contact-form');
+    var button = document.getElementById('contact-submit');
+    if (!form || !button) return;
+    form.addEventListener('submit', function () {
+      button.disabled = true;
+      button.classList.add('opacity-70');
+      button.querySelector('.submit-label').textContent = 'Sending…';
+    });
+  })();
+</script>
+{% endblock %}
